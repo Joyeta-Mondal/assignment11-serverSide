@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 
+const jwt = require('jsonwebtoken');
+
 const cookieParser = require('cookie-parser')
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -56,8 +58,21 @@ async function run() {
   try {
     // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log("MongoDb Connected");
+
+    app.post('/jwt', (req, res) => {
+      const { user } = req.body;
+      const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: '5h' });
+      res.cookie('token', token, cookieOptions).send({ success: 'Token sent' });
+  });
+
+  app.post('/logout', (req, res) => {
+      res.clearCookie('token', cookieOptions).send({ success: 'Logged out' });
+  });
+
+
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
