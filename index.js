@@ -1,17 +1,44 @@
 const express = require('express');
 const cors = require('cors');
+
+const cookieParser = require('cookie-parser')
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
-
-app.use(cors());
+// middlewares
+app.use(cors({
+  origin: ['http://localhost:5173',
+      '',
+      ''],
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
 
-app.get('/', (req,res)=>{
-    console.log('Assignment 11 category-8 server side running');
-})
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
+
+
+//verify jwt token
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+  if (!token) {
+      return res.status(403).send("A token is required for authentication");
+  }
+  try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+      // console.log("decoded", decoded);
+  } catch (err) {
+      return res.status(401).send("Invalid Token");
+  }
+  return next();
+};
 
 // mongodb start
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pebpd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -27,8 +54,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
