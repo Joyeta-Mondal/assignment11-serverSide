@@ -10,13 +10,14 @@ const port = process.env.PORT || 5000;
 
 // Middlewares
 app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      // "https://assignment11-client-c377c.web.app",
-    ],
-    credentials: true,
-  })
+  cors()
+  //   {
+  //   origin: [
+  //     "http://localhost:5173",
+  //     // "https://assignment11-client-c377c.web.app",
+  //   ],
+  //   credentials: true,
+  // }
 );
 app.use(express.json());
 app.use(cookieParser());
