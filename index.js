@@ -1,8 +1,9 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-require("dotenv").config();
+// require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -50,12 +51,16 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     console.log("MongoDB Connected");
 
     const database = client.db("bookWarts");
     const bookCollection = database.collection("books");
     const borrowCollection = database.collection("borrow");
+
+    app.get("/", (req, res) => {
+      res.send("Server!");
+    });
 
     // JWT Token Endpoint
     app.post("/jwt", (req, res) => {
@@ -104,18 +109,18 @@ async function run() {
       try {
         const { bookId } = req.params;
         const updatedBook = req.body;
-    
+
         // Remove the _id field from the updatedBook data to avoid updating the immutable field
         const { _id, ...updateData } = updatedBook;
-    
+
         // Convert bookId to ObjectId
         const objectId = new ObjectId(bookId);
-    
+
         const result = await bookCollection.updateOne(
           { _id: objectId }, // Filter by bookId
           { $set: updateData } // Update the book with the new data (excluding _id)
         );
-        
+
         if (result.modifiedCount > 0) {
           res.status(200).send("Book updated successfully");
         } else {
@@ -126,7 +131,6 @@ async function run() {
         res.status(500).send("Server error");
       }
     });
-    
 
     app.post("/api/books", verifyToken, async (req, res) => {
       try {
